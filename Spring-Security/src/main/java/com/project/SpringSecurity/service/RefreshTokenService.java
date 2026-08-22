@@ -8,4 +8,6 @@ public interface RefreshTokenService {
     String createRefreshToken (User user);
 
     LoginResponse verifyRefreshToken (String token);
+
+    void revokeRefreshToken(String token);
 }

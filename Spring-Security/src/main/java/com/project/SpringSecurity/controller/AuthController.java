@@ -51,4 +51,20 @@ public class AuthController {
 
         return ResponseEntity.ok(ApiResponseBuilder.success("Access token refreshed successfully", response));
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(
+            @Valid @RequestBody RefreshTokenRequest request)
+    {
+        refreshTokenService.revokeRefreshToken(
+                request.getRefreshToken()
+        );
+
+        return ResponseEntity.ok(
+                ApiResponseBuilder.success(
+                        "Logout successful",
+                        "User logged out successfully"
+                )
+        );
+    }
 }

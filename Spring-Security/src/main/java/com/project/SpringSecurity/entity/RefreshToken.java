@@ -18,6 +18,9 @@ public class RefreshToken {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    private String selector;
+
+    @Column(nullable = false)
     private String tokenHash;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

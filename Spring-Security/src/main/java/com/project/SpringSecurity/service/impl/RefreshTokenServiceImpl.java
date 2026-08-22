@@ -36,19 +36,34 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
         try
         {
-            byte[] randomBytes = new byte[32];
             SecureRandom secureRandom = new SecureRandom();
-            secureRandom.nextBytes(randomBytes);
 
-            String rawRefreshToken = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+            byte[] selectorBytes = new byte[16];
+            byte[] secretBytes = new byte[32];
 
-            String tokenHash = passwordEncoder.encode(rawRefreshToken);
+            secureRandom.nextBytes(selectorBytes);
+            secureRandom.nextBytes(secretBytes);
+
+            String selector = Base64.getUrlEncoder()
+                    .withoutPadding()
+                    .encodeToString(selectorBytes);
+
+            String secret = Base64.getUrlEncoder()
+                    .withoutPadding()
+                    .encodeToString(secretBytes);
+
+            String rawRefreshToken = selector + "." + secret;
+
+            String tokenHash = passwordEncoder.encode(secret);
 
             RefreshToken refreshToken = new RefreshToken();
 
+            refreshToken.setSelector(selector);
             refreshToken.setTokenHash(tokenHash);
             refreshToken.setUser(user);
-            refreshToken.setExpiresAt(Instant.now().plusMillis(refreshTokenExpiration));
+            refreshToken.setExpiresAt(
+                    Instant.now().plusMillis(refreshTokenExpiration)
+            );
             refreshToken.setRevoked(false);
 
             refreshTokenRepository.save(refreshToken);
@@ -70,25 +85,46 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
             );
         }
 
-        RefreshToken refreshToken = refreshTokenRepository.findAll()
-                .stream()
-                .filter(rt ->
-                        !rt.isRevoked()
-                                && passwordEncoder.matches(
-                                token,
-                                rt.getTokenHash()
-                        )
-                )
-                .findFirst()
-                .orElseThrow(() ->
-                        new InvalidRefreshTokenException(
-                                "Invalid or revoked refresh token"
-                        )
-                );
+        String[] parts = token.split("\\.", 2);
+
+        if (parts.length != 2 ||
+                parts[0].isBlank() ||
+                parts[1].isBlank()) {
+
+            throw new InvalidRefreshTokenException(
+                    "Invalid refresh token format"
+            );
+        }
+
+        String selector = parts[0];
+        String secret = parts[1];
+
+        RefreshToken refreshToken =
+                refreshTokenRepository.findBySelector(selector)
+                        .orElseThrow(() ->
+                                new InvalidRefreshTokenException(
+                                        "Invalid refresh token"
+                                )
+                        );
+
+        if (refreshToken.isRevoked()) {
+            throw new InvalidRefreshTokenException(
+                    "Refresh token has been revoked"
+            );
+        }
 
         if (refreshToken.getExpiresAt().isBefore(Instant.now())) {
             throw new InvalidRefreshTokenException(
                     "Refresh token has expired"
+            );
+        }
+
+        if (!passwordEncoder.matches(
+                secret,
+                refreshToken.getTokenHash()
+        )) {
+            throw new InvalidRefreshTokenException(
+                    "Invalid refresh token"
             );
         }
 
@@ -114,5 +150,55 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .accessToken(accessToken)
                 .refreshToken(token)
                 .build();
+    }
+
+    @Transactional
+    @Override
+    public void revokeRefreshToken(String token) {
+
+        if (token == null || token.isBlank()) {
+            throw new InvalidRefreshTokenException(
+                    "Refresh token is required"
+            );
+        }
+
+        String[] parts = token.split("\\.", 2);
+
+        if (parts.length != 2 ||
+                parts[0].isBlank() ||
+                parts[1].isBlank()) {
+
+            throw new InvalidRefreshTokenException(
+                    "Invalid refresh token format"
+            );
+        }
+
+        String selector = parts[0];
+        String secret = parts[1];
+
+        RefreshToken refreshToken =
+                refreshTokenRepository.findBySelector(selector)
+                        .orElseThrow(() ->
+                                new InvalidRefreshTokenException(
+                                        "Invalid refresh token"
+                                )
+                        );
+
+        if (!passwordEncoder.matches(
+                secret,
+                refreshToken.getTokenHash()
+        )) {
+            throw new InvalidRefreshTokenException(
+                    "Invalid refresh token"
+            );
+        }
+
+        if (refreshToken.isRevoked()) {
+            return;
+        }
+
+        refreshToken.setRevoked(true);
+
+        refreshTokenRepository.save(refreshToken);
     }
 }
