@@ -2,7 +2,10 @@ package com.project.SpringSecurity.config;
 
 import com.project.SpringSecurity.security.JwtAuthenticationFilter;
 import com.project.SpringSecurity.security.JwtService;
+import com.project.SpringSecurity.security.OAuth2AuthenticationFailureHandler;
+import com.project.SpringSecurity.security.OAuth2AuthenticationSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +22,12 @@ import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -57,6 +65,11 @@ public class SecurityConfig {
                                 "/api/v1/auth/logout"
                         ).permitAll()
                         .anyRequest().authenticated()
+                )
+
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
 
                 .exceptionHandling(exception -> exception

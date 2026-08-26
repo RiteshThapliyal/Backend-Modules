@@ -1,5 +1,6 @@
 package com.project.SpringSecurity.entity;
 
+import com.project.SpringSecurity.enums.AuthProvider;
 import com.project.SpringSecurity.enums.Role;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -25,6 +26,9 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
 
     @Enumerated(EnumType.STRING)
     private Role role;

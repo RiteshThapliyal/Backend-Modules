@@ -6,6 +6,7 @@ import com.project.SpringSecurity.dto.request.RegisterRequest;
 import com.project.SpringSecurity.dto.response.LoginResponse;
 import com.project.SpringSecurity.dto.response.RegisterResponse;
 import com.project.SpringSecurity.entity.User;
+import com.project.SpringSecurity.enums.AuthProvider;
 import com.project.SpringSecurity.enums.Role;
 import com.project.SpringSecurity.exception.registration.EmailAlreadyExistException;
 import com.project.SpringSecurity.repository.UserRepository;
@@ -53,6 +54,7 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.USER);
+        user.setProvider(AuthProvider.LOCAL);
 
         return user;
     }
