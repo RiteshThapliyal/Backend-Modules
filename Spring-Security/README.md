@@ -78,6 +78,7 @@ trade-offs involved in building the system.
                                     ▼
                           Generate New Access Token
 
+```
 ## Features
 
 Authentication
