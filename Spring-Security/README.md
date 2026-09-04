@@ -139,7 +139,7 @@ OAuth2
 
 ---
 
-Architecture
+## Architecture
 
 The module follows a layered architecture to keep responsibilities separated
 and reduce coupling between different parts of the application.
