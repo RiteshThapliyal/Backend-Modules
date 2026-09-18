@@ -104,6 +104,38 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    @ExceptionHandler(ProductUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleProductUnavailable(
+            ProductUnavailableException ex) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .status("ERROR")
+                .message(ex.getMessage())
+                .errors(null)
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientStock(
+            InsufficientStockException ex) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .status("ERROR")
+                .message(ex.getMessage())
+                .errors(null)
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex) {
