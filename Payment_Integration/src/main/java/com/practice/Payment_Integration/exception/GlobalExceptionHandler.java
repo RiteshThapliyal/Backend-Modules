@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -120,6 +121,69 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderNotFound(
+            OrderNotFoundException ex) {
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .message(ex.getMessage())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(errorResponse);
+    }
+
+    @ExceptionHandler(IdempotencyKeyMissingException.class)
+    public ResponseEntity<ErrorResponse> handleIdempotencyKeyMissing(
+            IdempotencyKeyMissingException ex) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .status("ERROR")
+                .message(ex.getMessage())
+                .errors(null)
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(IdempotencyKeyConflictException.class)
+    public ResponseEntity<ErrorResponse> handleIdempotencyKeyConflict(
+            IdempotencyKeyConflictException ex) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .status("ERROR")
+                .message(ex.getMessage())
+                .errors(null)
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
+    @ExceptionHandler(InvalidPaymentStateException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidPaymentState(
+            InvalidPaymentStateException ex) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .status("ERROR")
+                .message(ex.getMessage())
+                .errors(null)
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
     @ExceptionHandler(InsufficientStockException.class)
     public ResponseEntity<ErrorResponse> handleInsufficientStock(
             InsufficientStockException ex) {
@@ -144,6 +208,24 @@ public class GlobalExceptionHandler {
                 .status("ERROR")
                 .message("Invalid request body. Please provide valid data types.")
                 .errors(null)
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestHeader(
+            MissingRequestHeaderException exception) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .status("ERROR")
+                .message("Required request header is missing")
+                .errors(List.of(
+                        exception.getHeaderName() + " header is required"
+                ))
                 .timestamp(Instant.now())
                 .build();
 
