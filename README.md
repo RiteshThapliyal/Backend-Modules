@@ -13,8 +13,8 @@ different applications based on specific business requirements.
 
 | Module | Description | Status |
 |--------|-------------|--------|
-| [Spring Security](./spring-security) | JWT authentication, authorization, refresh tokens and logout | 🚧 In Progress |
-| [Payment Integration](./payment-integration) | Payment gateway integration and payment lifecycle | ⏳ Planned |
+| [Spring Security](./spring-security) | JWT authentication, authorization, refresh tokens and logout | ✅ Completed |
+| [Payment Integration](./payment-integration) | Payment gateway integration and payment lifecycle | 🚧 In Progress |
 | [Email Service](./email-service) | Email sending and email-based workflows | ⏳ Planned |
 | [File Upload](./file-upload) | File upload and storage handling | ⏳ Planned |
 
